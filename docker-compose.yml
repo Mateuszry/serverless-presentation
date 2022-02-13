@@ -1,0 +1,17 @@
+version: "3.3"
+services:
+  app:
+    image: "bpol/serverless:3.9"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./src:/app/src
+      - ./serverless.yml:/app/serverless.yml
+      - ./setup.cfg:/app/setup.cfg
+      - ./requirements.txt:/app/requirements.txt
+      - .aws/:/root/.aws/
+    env_file: .env
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    command: "sls offline start --host $HOST"

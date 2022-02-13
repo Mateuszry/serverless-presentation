@@ -1,0 +1,7 @@
+boto3==1.17.49
+botocore==1.20.49
+flake8==4.0.1
+mccabe==0.6.1
+pydevd-pycharm~=203.7148.72
+pyflakes==2.4.0
+requests==2.25.1

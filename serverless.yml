@@ -1,0 +1,102 @@
+service: serverless-presentation
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+  - serverless-prune-plugin
+  - serverless-dynamodb-local
+provider:
+  timeout: 30
+  name: aws
+  runtime: python3.9
+  region: eu-west-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource: "*"
+  apiGateway:
+    apiKeys: # list of named API keys to be used on private Rest API endpoints
+      - serverless-presentation-api-key
+  lambdaHashingVersion: 20201221 # version of hashing algorithm that should be used by the framework
+  environment:
+    # listing all env variables here might not be mandatory if .env file is present but it make serverless deploy to know
+    # what env variables to set in lambda after deploy
+    # region is hardcoded
+    REGION: eu-west-1
+    NOTE_TABLE: ${self:custom.tableNames.note}
+
+custom:
+  serverless-offline:
+    apiKey: 'serverless-offline-api-key'
+  prune:
+    automatic: true # automatic launch during sls deploy
+    number: 3  # how many versions of the functions on AWS will be kept and the rest will be removed
+  tableNames:
+    note: serverless-presentatnion-note
+  dynamodb:
+    start:
+      migrate: true # create DynamoDB tables from the Serverless configuration
+    inMemory: true # DynamoDB will run in memory, instead of using a database file
+    stages:
+      - dev
+
+resources:
+  Resources:
+    noteDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableNames.note}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+functions: # lambdas
+  healthcheck:
+    handler: src/healthcheck.lambda_handler
+    events:
+      - http:
+          path: healthcheck
+          method: get
+  createNote:
+    handler: src/create_note.lambda_handler
+    timeout: 30
+    description: Creates a new note
+    events:
+      - http: # creates an API Gateway HTTP endpoint which can be used to trigger this function
+          path: note
+          method: post
+          private: true # endpoint secured with api key
+
+  getNote:
+    handler: src/get_note.lambda_handler
+    timeout: 30
+    description: Get a specific note
+    events:
+      - http:
+          path: note/{id}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                id: true
+
+package:
+  patterns: # specify the directories and files which should be included in the deployment package
+    - '!venv/**'
+    - '!node_modules/**'
+    - '!.idea/**'
+    - '!.env'
+    - '!*.md'
+    - '!.gitignore'
+    - '!requirements.txt'
+    - '!package-lock.json'
+    - '!package.json'
+    - '!.dynamodb/**'
