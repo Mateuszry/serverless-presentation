@@ -8,6 +8,7 @@ from src.StorageGateway import StorageGateway
 
 def lambda_handler(event, context):
     try:
+        logging.warning(f"Create note request body: {event.get('body')}")
         note = json.loads(event.get("body"))
         note['id'] = uuid.uuid4().hex
 
