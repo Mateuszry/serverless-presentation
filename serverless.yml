@@ -1,3 +1,7 @@
+org: ryszkama
+app: serverless-presentation
+frameworkVersion: '3'
+
 service: serverless-presentation
 
 plugins:
@@ -20,7 +24,6 @@ provider:
   apiGateway:
     apiKeys: # list of named API keys to be used on private Rest API endpoints
       - serverless-presentation-api-key
-  lambdaHashingVersion: 20201221 # version of hashing algorithm that should be used by the framework
   environment:
     # listing all env variables here might not be mandatory if .env file is present but it make serverless deploy to know
     # what env variables to set in lambda after deploy

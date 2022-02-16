@@ -3,7 +3,7 @@
 ### Development without docker requirements
 
 * Python 3.9
-* Serverless
+* Serverless 3
 * Plugins:
     * serverless-python-requirements
     * serverless-prune-plugin
